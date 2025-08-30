@@ -190,7 +190,7 @@ weight_data['WeightKg'] = weight_data['WeightKg'].round(2)
 weight_data['BMI'] = weight_data['BMI'].round(2)
 
 # Convert 'Date' to timestamp and keep only date part
-weight_data['Date'] = pd.to_datetime(weight_data['Date']).dt.date
+weight_data['Date'] = pd.to_datetime(weight_data['Date'], format='%m/%d/%Y %I:%M:%S %p', errors='coerce').dt.date
 
 # Duplicate rows count
 wt_duplicate_count = weight_data.duplicated().sum()
@@ -234,19 +234,24 @@ activity_data = pd.concat([dailyActivity_first, dailyActivity_second], ignore_in
 cols_to_drop = ['TrackerDistance', 'LoggedActivitiesDistance', 'SedentaryActiveDistance']
 activity_data = activity_data.drop(columns=cols_to_drop, errors='ignore')
 
-activity_data['TotalDistance'] = activity_data['TotalDistance'].round(2)
-activity_data['VeryActiveDistance'] = activity_data['VeryActiveDistance'].round(2)
-activity_data['ModeratelyActiveDistance'] = activity_data['ModeratelyActiveDistance'].round(2)
-activity_data['LightActiveDistance'] = activity_data['LightActiveDistance'].round(2)
-activity_data['VeryActiveMinutes'] = activity_data['VeryActiveMinutes'].round(2)
-activity_data['FairlyActiveMinutes'] = activity_data['FairlyActiveMinutes'].round(2)
-activity_data['LightlyActiveMinutes'] = activity_data['LightlyActiveMinutes'].round(2)
-activity_data['SedentaryMinutes'] = activity_data['SedentaryMinutes'].round(2)
-activity_data['Calories'] = activity_data['Calories'].round(2)
+cols_to_round = [
+    'TotalDistance',
+    'VeryActiveDistance',
+    'ModeratelyActiveDistance',
+    'LightActiveDistance',
+    'VeryActiveMinutes',
+    'FairlyActiveMinutes',
+    'LightlyActiveMinutes',
+    'SedentaryMinutes',
+    'Calories'
+]
+
+activity_data[cols_to_round] = activity_data[cols_to_round].round(2)
+
 
 
 # Convert 'Date' to timestamp and keep only date part
-activity_data['ActivityDate'] = pd.to_datetime(activity_data['ActivityDate']).dt.date
+activity_data['ActivityDate'] = pd.to_datetime(activity_data['ActivityDate'], format='%m/%d/%Y', errors='coerce').dt.date
 
 # Duplicate rows count
 activity_duplicate_count = activity_data.duplicated().sum()
@@ -290,8 +295,8 @@ cols_to_drop = ['logId']
 minSleep_data = minSleep_data.drop(columns=cols_to_drop, errors='ignore')
 
 # Convert 'Date' to timestamp and keep date and time part
-minSleep_data['date'] = pd.to_datetime(minSleep_data['date'], errors='coerce')
-minSleep_data['Date'] = minSleep_data['date'].dt.date.astype(str)        # YYYY-MM-DD as string
+minSleep_data['date'] = pd.to_datetime(minSleep_data['date'], format='%m/%d/%Y %I:%M:%S %p', errors='coerce')
+minSleep_data['Date'] = minSleep_data['date'].dt.date.astype(str)
 minSleep_data['Time'] = minSleep_data['date'].dt.time.astype(str)
 minSleep_data = minSleep_data.drop(columns=['date'])
 
@@ -310,7 +315,7 @@ sleep_dtypes_info = minSleep_data.dtypes
 sleep_null_counts = minSleep_data.isnull().sum()
 
 # Save cleaned dataset
-sleep_output_path = "Data/Merged_data/minSleep_data.csv"
+sleep_output_path = "Data\Merged_data\minSleep_data.csv"
 minSleep_data.to_csv(sleep_output_path, index=False)
 
 # ---- Display Report ----
@@ -333,7 +338,7 @@ print(minSleep_data.head())
 hourlyCalories_data = pd.concat([hourlyCalories_first, hourlyCalories_second], ignore_index=True)
 
 # Convert 'Date' to timestamp and keep date and time part
-hourlyCalories_data['ActivityHour'] = pd.to_datetime(hourlyCalories_data['ActivityHour'], errors='coerce')
+hourlyCalories_data['ActivityHour'] = pd.to_datetime(hourlyCalories_data['ActivityHour'], format='%m/%d/%Y %I:%M:%S %p', errors='coerce')
 hourlyCalories_data['Date'] = hourlyCalories_data['ActivityHour'].dt.date.astype(str)        # YYYY-MM-DD as string
 hourlyCalories_data['Time'] = hourlyCalories_data['ActivityHour'].dt.time.astype(str)
 hourlyCalories_data = hourlyCalories_data.drop(columns=['ActivityHour'])
@@ -377,7 +382,7 @@ hourlyIntensities_data = pd.concat([hourlyIntensities_first, hourlyIntensities_s
 hourlyIntensities_data['AverageIntensity'] = hourlyIntensities_data['AverageIntensity'].round(3)
 
 # Convert 'Date' to timestamp and keep date and time part
-hourlyIntensities_data['ActivityHour'] = pd.to_datetime(hourlyIntensities_data['ActivityHour'], errors='coerce')
+hourlyIntensities_data['ActivityHour'] = pd.to_datetime(hourlyIntensities_data['ActivityHour'], format='%m/%d/%Y %I:%M:%S %p', errors='coerce')
 hourlyIntensities_data['Date'] = hourlyIntensities_data['ActivityHour'].dt.date.astype(str)        # YYYY-MM-DD as string
 hourlyIntensities_data['Time'] = hourlyIntensities_data['ActivityHour'].dt.time.astype(str)
 hourlyIntensities_data = hourlyIntensities_data.drop(columns=['ActivityHour'])
@@ -421,7 +426,7 @@ print(hourlyIntensities_data.head())
 hourlySteps_data = pd.concat([hourlySteps_first, hourlySteps_second], ignore_index=True)
 
 # Convert 'Date' to timestamp and keep date and time part
-hourlySteps_data['ActivityHour'] = pd.to_datetime(hourlySteps_data['ActivityHour'], errors='coerce')
+hourlySteps_data['ActivityHour'] = pd.to_datetime(hourlySteps_data['ActivityHour'], format='%m/%d/%Y %I:%M:%S %p', errors='coerce')
 hourlySteps_data['Date'] = hourlySteps_data['ActivityHour'].dt.date.astype(str)        # YYYY-MM-DD as string
 hourlySteps_data['Time'] = hourlySteps_data['ActivityHour'].dt.time.astype(str)
 hourlySteps_data = hourlySteps_data.drop(columns=['ActivityHour'])
