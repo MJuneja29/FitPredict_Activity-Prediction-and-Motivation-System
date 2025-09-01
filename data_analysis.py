@@ -198,3 +198,164 @@ def usage_pattern_analysis(act_daily_clean, sleep_daily_clean):
     # -------- Return DataFrames for later use -------- #
     return daily_stats, sleep_pattern
 
+
+
+import seaborn as sns
+import numpy as np
+
+def create_visualizations(act_daily_clean, sleep_daily_clean, act_distribution, 
+                         daily_stats, sleep_pattern, user_act_byID):
+    
+    print("\n" + "="*30)
+    print("GENERATING VISUALIZATIONS")
+    print("="*30)
+    
+    # Set consistent plotting style
+    plt.rcParams['figure.figsize'] = (15, 10)
+    sns.set_style("whitegrid")
+    
+    # Create a dashboard canvas with 9 plots
+    fig = plt.figure(figsize=(22, 18))
+    
+    # ---------------------------
+    # 1. Activity Level Distribution (Pie Chart)
+    # ---------------------------
+    ax1 = plt.subplot(3, 3, 1)
+    colors = ['#ff9999', '#66b3ff', '#99ff99', '#ffcc99', '#c2c2f0']
+    act_distribution.plot(kind='pie', autopct='%1.1f%%', colors=colors, ax=ax1)
+    ax1.set_title('User Activity Level Distribution', fontsize=10, fontweight='bold')
+    ax1.set_ylabel('')
+    
+    # ---------------------------
+    # 2. Average Steps by Weekday (Bar Chart)
+    # ---------------------------
+    ax2 = plt.subplot(3, 3, 2)
+    weekday_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    daily_usage_ordered = daily_stats.reindex(weekday_order)
+    daily_usage_ordered['totalsteps'].plot(kind='bar', color='steelblue', ax=ax2)
+    ax2.set_title('Average Steps by Day', fontsize=10, fontweight='bold')
+    ax2.set_xlabel('Day of Week')
+    ax2.set_ylabel('Average Steps')
+    ax2.tick_params(axis='x', rotation=25)
+    
+    # ---------------------------
+    # 3. Steps vs Calories (Scatter + Trendline)
+    # ---------------------------
+    ax3 = plt.subplot(3, 3, 3)
+    ax3.scatter(act_daily_clean['totalsteps'], act_daily_clean['calories'], 
+                alpha=0.6, color='darkgreen')
+    
+    # Fit linear regression line
+    z = np.polyfit(act_daily_clean['totalsteps'], act_daily_clean['calories'], 1)
+    p = np.poly1d(z)
+    ax3.plot(act_daily_clean['totalsteps'], p(act_daily_clean['totalsteps']), 
+             "r--", alpha=0.8, label="Trendline")
+    
+    ax3.set_title('Steps vs Calories Burned', fontsize=10, fontweight='bold')
+    ax3.set_xlabel('Total Steps')
+    ax3.set_ylabel('Calories Burned')
+    
+    # Correlation text box
+    correlation = np.corrcoef(act_daily_clean['totalsteps'], act_daily_clean['calories'])[0,1]
+    ax3.text(0.05, 0.95, f'Correlation: {correlation:.3f}', transform=ax3.transAxes, 
+             bbox=dict(boxstyle="round", facecolor='wheat', alpha=0.5))
+    
+    # ---------------------------
+    # 4. Sleep Efficiency by Weekday
+    # ---------------------------
+    ax4 = plt.subplot(3, 3, 4)
+    sleep_pattern_ordered = sleep_pattern.reindex(weekday_order)
+    sleep_pattern_ordered['sleep_efficiency (%)'].plot(kind='bar', color='purple', ax=ax4)
+    ax4.set_title('Sleep Efficiency by Day', fontsize=10, fontweight='bold')
+    ax4.set_xlabel('Day of Week')
+    ax4.set_ylabel('Sleep Efficiency (%)')
+    ax4.tick_params(axis='x', rotation=25)
+    
+    # ---------------------------
+    # 5. Steps vs Sedentary Minutes
+    # ---------------------------
+    ax5 = plt.subplot(3, 3, 5)
+    ax5.scatter(act_daily_clean['totalsteps'], act_daily_clean['sedentaryminutes'], 
+                alpha=0.6, color='darkred')
+    
+    # Fit regression line
+    z = np.polyfit(act_daily_clean['totalsteps'], act_daily_clean['sedentaryminutes'], 1)
+    p = np.poly1d(z)
+    ax5.plot(act_daily_clean['totalsteps'], p(act_daily_clean['totalsteps']), 
+             "b--", alpha=0.8, label="Trendline")
+    
+    ax5.set_title('Steps vs Sedentary Time', fontsize=10, fontweight='bold')
+    ax5.set_xlabel('Total Steps')
+    ax5.set_ylabel('Sedentary Minutes')
+    
+    # ---------------------------
+    # 6. Average Activity Minutes Distribution
+    # ---------------------------
+    ax6 = plt.subplot(3, 3, 6)
+    activity_minutes = act_daily_clean[['veryactiveminutes', 'fairlyactiveminutes', 
+                                           'lightlyactiveminutes', 'sedentaryminutes']].mean()
+    activity_minutes.plot(kind='bar', 
+                          color=['red', 'orange', 'yellow', 'gray'], ax=ax6, edgecolor="black")
+    ax6.set_title('Average Daily Activity Distribution', fontsize=10, fontweight='bold')
+    ax6.set_xlabel('Activity Type')
+    ax6.set_ylabel('Average Minutes')
+    ax6.tick_params(axis='x', rotation=25)
+    
+    # ---------------------------
+    # 7. Steps vs Sleep Duration (Merged Data)
+    # ---------------------------
+    ax7 = plt.subplot(3, 3, 7)
+    
+    # Convert activity date to match sleep date
+    act_daily_clean['date'] = act_daily_clean['activitydate'].dt.date
+    activity_sleep = pd.merge(act_daily_clean, sleep_daily_clean, 
+                             on=['id', 'date'], how='inner')
+    
+    if not activity_sleep.empty:
+        ax7.scatter(activity_sleep['totalsteps'], activity_sleep['totalminutesasleep'], 
+                    alpha=0.6, color='indigo')
+        
+        # Fit regression
+        z = np.polyfit(activity_sleep['totalsteps'], activity_sleep['totalminutesasleep'], 1)
+        p = np.poly1d(z)
+        ax7.plot(activity_sleep['totalsteps'], p(activity_sleep['totalsteps']), 
+                 "orange", alpha=0.8, label="Trendline")
+        
+        ax7.set_title('Steps vs Sleep Duration', fontsize=10, fontweight='bold')
+        ax7.set_xlabel('Total Steps')
+        ax7.set_ylabel('Minutes Asleep')
+    
+    # ---------------------------
+    # 8. Steps Distribution by Activity Level (Boxplot)
+    # ---------------------------
+    ax8 = plt.subplot(3, 3, 8)
+    user_act_byID.boxplot(column='totalsteps', by='activity_level', ax=ax8, grid=False)
+    ax8.set_title('Steps Distribution by Activity Level', fontsize=10, fontweight='bold')
+    ax8.set_xlabel('Activity Level')
+    ax8.set_ylabel('Total Steps')
+    ax8.tick_params(axis='x', rotation=25)
+    
+    # ---------------------------
+    # 9. Correlation Heatmap
+    # ---------------------------
+    ax9 = plt.subplot(3, 3, 9)
+    corr_cols = ['totalsteps', 'totaldistance', 'calories', 
+                        'veryactiveminutes', 'fairlyactiveminutes', 
+                        'lightlyactiveminutes', 'sedentaryminutes']
+    corr_matrix = act_daily_clean[corr_cols].corr()
+    
+    sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', center=0, 
+                square=True, ax=ax9, cbar_kws={"shrink": .9}, fmt=".2f")
+    ax9.set_title('Activity Variables Correlation', fontsize=10, fontweight='bold')
+    ax9.tick_params(axis='x', rotation=25)
+    ax9.tick_params(axis='y', rotation=0)
+    
+    # ---------------------------
+    # Final layout adjustments
+    # ---------------------------
+    plt.suptitle("Comprehensive User Activity & Sleep Dashboard", fontsize=14, fontweight="bold", y=1.02)
+    plt.tight_layout()
+    plt.show()
+    
+    return correlation
+
