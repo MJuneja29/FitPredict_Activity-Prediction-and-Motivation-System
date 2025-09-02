@@ -359,3 +359,82 @@ def create_visualizations(act_daily_clean, sleep_daily_clean, act_distribution,
     
     return correlation
 
+
+def calculate_key_insights(act_daily_clean, sleep_daily_clean, user_act_byID):
+    
+    print("\n" + "="*30)
+    print("USER BEHAVIOR INSIGHTS")
+    print("="*30)
+
+    # -----------------------------------------------------
+    # 1. Basic lifestyle averages
+    # -----------------------------------------------------
+    mean_steps = act_daily_clean['totalsteps'].mean()                      # avg daily steps
+    mean_sleep_hrs = sleep_daily_clean['totalminutesasleep'].mean() / 60   # avg sleep (hours)
+    mean_sedentary_hrs = act_daily_clean['sedentaryminutes'].mean() / 60   # avg sedentary (hours)
+
+    # -----------------------------------------------------
+    # 2. Active vs inactive user distribution
+    # -----------------------------------------------------
+    movers = user_act_byID[user_act_byID['activity_level'].isin(["Moderately Active", "Active", "Highly Active"])]
+    movers_ratio = (len(movers) / len(user_act_byID)) * 100
+    inactive_ratio = 100 - movers_ratio
+
+    # -----------------------------------------------------
+    # 3. Participation in activity vs sleep tracking
+    # -----------------------------------------------------
+    tracked_act_users = act_daily_clean['id'].nunique()
+    tracked_sleep_users = sleep_daily_clean['id'].nunique()
+
+    # -----------------------------------------------------
+    # 4. Print readable insights
+    # -----------------------------------------------------
+    print("\nGENERAL INSIGHTS")
+    print(f"- Typical daily steps: {mean_steps:,.0f}")
+    print(f"- Typical sleep duration: {mean_sleep_hrs:.1f} hrs")
+    print(f"- Typical sedentary time: {mean_sedentary_hrs:.1f} hrs")
+
+    print("\nACTIVITY LEVELS")
+    print(f"- Active users (Moderately Active, Active & Highly Active): {movers_ratio:.1f}%")
+    print(f"- Less active users: {inactive_ratio:.1f}%")
+
+    print("\nTRACKING COVERAGE")
+    print(f"- Users logging activity: {tracked_act_users}")
+    print(f"- Users logging sleep: {tracked_sleep_users} (out of {tracked_act_users})")
+
+    # -----------------------------------------------------
+    # 5. Behavioral patterns
+    # -----------------------------------------------------
+    day_with_max_steps = act_daily_clean.groupby('weekday')['totalsteps'].mean().idxmax()
+    day_with_min_steps = act_daily_clean.groupby('weekday')['totalsteps'].mean().idxmin()
+    step_calorie_link = act_daily_clean[['totalsteps', 'calories']].corr().iloc[0, 1]
+
+    print("\nWEEKDAY PATTERNS")
+    print(f"- Most active day: {day_with_max_steps}")
+    print(f"- Least active day: {day_with_min_steps}")
+
+    print("\nCORRELATIONS")
+    print(f"- Steps vs Calories correlation: {step_calorie_link:.3f}")
+
+    # -----------------------------------------------------
+    # 6. Return structured results
+    # -----------------------------------------------------
+    return {
+        'mean_steps': mean_steps,
+        'mean_sleep_hrs': mean_sleep_hrs,
+        'mean_sedentary_hrs': mean_sedentary_hrs,
+        'movers_ratio': movers_ratio,
+        'inactive_ratio': inactive_ratio,
+        'day_with_max_steps': day_with_max_steps,
+        'day_with_min_steps': day_with_min_steps,
+        'step_calorie_link': step_calorie_link,
+        'tracked_act_users': tracked_act_users,
+        'tracked_sleep_users': tracked_sleep_users
+    }
+
+
+act_daily_clean, sleep_daily_clean, wt_log_clean = clean_transform_data(act_daily, sleep_daily, wt_log)
+user_act_byID, act_distribution, act_percent = act_level_analysis(act_daily_clean)
+daily_stats, sleep_pattern = usage_pattern_analysis(act_daily_clean, sleep_daily_clean)
+correlation = create_visualizations(act_daily_clean, sleep_daily_clean, act_distribution, daily_stats, sleep_pattern, user_act_byID)
+key_findings = calculate_key_insights(act_daily_clean, sleep_daily_clean, user_act_byID)
