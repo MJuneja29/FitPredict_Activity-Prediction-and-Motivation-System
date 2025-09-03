@@ -116,7 +116,7 @@ pd.set_option("display.precision", 2)
 
 # Example usage:
 sleep_hourly = preprocess_sleep_minute_to_hourly(sleep_minutes)
-print(sleep_hourly.head(50))
+# print(sleep_hourly.head(50))
 
 
 # # Merge all files
@@ -175,5 +175,97 @@ def preprocess_heart_rate_with_stress(heartrate_df):
 
 
 # Example usage
-final_hr = preprocess_heart_rate_with_stress(hr_seconds)
-print(final_hr.head(50))
+hr_hourly = preprocess_heart_rate_with_stress(hr_seconds)
+# print(hr_hourly.head(50))
+
+
+
+# Cleaning
+
+def clean_dataframe(df, name="DataFrame"):
+    df_clean = df.copy()
+
+    # Count before cleaning
+    initial_shape = df.shape
+    initial_nulls = df.isnull().sum().sum()
+    initial_duplicates = df.duplicated().sum()
+
+    # Fill NaN with 0
+    df_clean = df_clean.fillna(0)
+
+    # Drop duplicate rows
+    df_clean = df_clean.drop_duplicates()
+
+    # Count after cleaning
+    final_shape = df_clean.shape
+    final_nulls = df_clean.isnull().sum().sum()
+    final_duplicates = df_clean.duplicated().sum()
+
+    # Summary
+    print(f"\nCleaning Summary for {name}:")
+    print(f"Initial shape: {initial_shape}")
+    print(f"Final shape:   {final_shape}")
+    print(f"Rows removed (duplicates): {initial_duplicates}")
+    print(f"Missing values filled:     {initial_nulls}")
+    print(f"Remaining nulls:           {final_nulls}")
+    print(f"Remaining duplicates:      {final_duplicates}")
+    print("-" * 50)
+
+    return df_clean
+
+
+calories_hourly_clean = clean_dataframe(calories_hourly, "Calories")
+intensities_hourly_clean = clean_dataframe(intensities_hourly, "Intensities")
+steps_hourly_clean = clean_dataframe(steps_hourly, "Steps")
+sleep_hourly_clean = clean_dataframe(sleep_hourly, "Sleep")
+hr_hourly_clean = clean_dataframe(hr_hourly, "Heart Rate")
+
+
+
+def merge_all_data(calories, intensities, steps, sleep, heartrate, how="outer"):
+   
+    def ensure_types(df):
+        df = df.copy()
+        df["Id"] = df["Id"].astype(str)   # keep consistent as string (user IDs can be big)
+        df["ActivityHour"] = pd.to_datetime(df["ActivityHour"])
+        return df
+
+    # Fix datatypes
+    calories = ensure_types(calories)
+    intensities = ensure_types(intensities)
+    steps = ensure_types(steps)
+    sleep = ensure_types(sleep)
+    heartrate = ensure_types(heartrate)
+
+    # Start merging
+    merged_df = calories.copy()
+    merged_df = pd.merge(merged_df, intensities, on=["Id", "ActivityHour"], how=how)
+    merged_df = pd.merge(merged_df, steps, on=["Id", "ActivityHour"], how=how)
+    merged_df = pd.merge(merged_df, sleep, on=["Id", "ActivityHour"], how=how)
+    merged_df = pd.merge(merged_df, heartrate, on=["Id", "ActivityHour"], how=how)
+
+    # Fill NaN with 0
+    merged_df = merged_df.fillna(0)
+
+    # Sort by user and time (important for LSTM later)
+    merged_df = merged_df.sort_values(by=["Id", "ActivityHour"]).reset_index(drop=True)
+
+    print("Final merged dataset created")
+    print("Shape:", merged_df.shape)
+    print("Columns:", merged_df.columns.tolist())
+
+    return merged_df
+
+
+
+final_hourly = merge_all_data(
+    calories_hourly_clean,
+    intensities_hourly_clean,
+    steps_hourly_clean,
+    sleep_hourly_clean,
+    hr_hourly_clean
+)
+
+save_path = r"Data\\final_hourly.csv"
+final_hourly.to_csv(save_path, index=False)
+
