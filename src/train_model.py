@@ -206,8 +206,7 @@ def plot_actual_vs_predicted(actual_values, predicted_values):
     plt.show()
 
 # ==============================================================================
-# SECTION 5: MAIN SCRIPT EXECUTION
-# This is the main block that runs when you execute the file.
+# MAIN SCRIPT EXECUTION
 # ==============================================================================
 if __name__ == "__main__":
     
@@ -215,7 +214,7 @@ if __name__ == "__main__":
     try:
         final_df = pd.read_csv("Data\\final_hourly.csv") 
     except FileNotFoundError:
-        print("ERROR: csv file not found. Please place it in the same directory.")
+        print("ERROR: 'your_data.csv' not found. Please place it in the same directory.")
         exit()
 
     # --- Step 2: Prepare the Data for the LSTM Model ---
@@ -224,7 +223,7 @@ if __name__ == "__main__":
     )
     
     # --- Step 3: Train the Model ---
-    # We set a high number of epochs (100) and let EarlyStopping automatically find the best one.
+    # We set a high number of epochs and let EarlyStopping automatically find the best one.
     model, history, predictions_in_calories = train_and_evaluate(
         X_train_s, y_train_s, X_test_s, y_test_s, y_test_original, t_scaler, epochs=100
     )
@@ -235,8 +234,8 @@ if __name__ == "__main__":
     if len(y_test_original) > 0:
         plot_actual_vs_predicted(y_test_original, predictions_in_calories)
         
-    # --- Step 5: Save the Final Model and Assets into the 'src' Folder ---
-    print("\n--- Saving model and assets to the 'src' folder ---")
+    # --- Step 5: Save the Final Model and ALL Necessary Assets into the 'src' Folder ---
+    print("\n--- Saving model, assets, and test data to the 'src' folder ---")
     
     # Define the name of the folder where we'll save our assets.
     save_dir = "src"
@@ -245,11 +244,17 @@ if __name__ == "__main__":
     os.makedirs(save_dir, exist_ok=True)
     
     # Save all the components we need for future predictions.
-    # We use os.path.join to make sure the file path is correct on any operating system.
     model.save(os.path.join(save_dir, "calorie_prediction_model.h5"))
     joblib.dump(f_scaler, os.path.join(save_dir, "feature_scaler.joblib"))
     joblib.dump(t_scaler, os.path.join(save_dir, "target_scaler.joblib"))
     joblib.dump(feature_cols, os.path.join(save_dir, "feature_columns.joblib"))
     
-    print(f"Model and assets saved successfully in the '{save_dir}' folder!")
+    # --- THIS IS THE NEW PART ---
+    # To properly evaluate our model later, we also need to save the exact
+    # test data that was used. We regenerate it here to ensure it's the correct slice.
+    # Note: We are not importing functions from the same file, so we need to call them directly.
+    _ , test_df = split_per_user_time(make_dense_hourly(ensure_types(final_df)), test_size=0.2)
+    test_df.to_csv(os.path.join(save_dir, "test_data.csv"), index=False)
+    
+    print(f"Model, assets, and test data saved successfully in the '{save_dir}' folder!")
     print("You are now ready to use `predict.py` for instant predictions.")
