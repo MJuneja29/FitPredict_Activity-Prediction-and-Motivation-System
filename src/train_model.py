@@ -1,5 +1,7 @@
 # ==============================================================================
-# FINAL TRAINING SCRIPT - train_model.py
+# Fitbit User Activity - Exploratory Data Analysis (EDA)
+#
+# Project:      IIT Ropar Capstone Project
 #
 # Purpose: This script performs the entire machine learning pipeline:
 #   1. Loads the raw Fitbit data.
@@ -8,7 +10,6 @@
 #   4. Evaluates the best model and shows performance graphs.
 #   5. Saves the final, trained model and all necessary components to a 'src' folder.
 #
-# You only need to run this script ONCE to train and save your model.
 # ==============================================================================
 
 # --- Step 1: Import all the necessary libraries ---

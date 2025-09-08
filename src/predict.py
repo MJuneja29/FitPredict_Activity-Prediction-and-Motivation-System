@@ -1,8 +1,42 @@
 # ==============================================================================
-# FINAL EVALUATION SCRIPT - evaluate_forecaster.py (Corrected Version)
+# Daily Forecast Model - Final Evaluation Script
 #
-# Purpose: This script correctly uses the saved `test_data.csv` to
-#          systematically evaluate the daily forecast model.
+# Project:      IIT Ropar Capstone Project
+# Script:       evaluate_forecaster.py
+#
+# ------------------------------------------------------------------------------
+#
+# Purpose:
+#
+# This script is dedicated to the rigorous and systematic evaluation of the
+# trained daily calorie forecast model. Its primary goal is to measure the
+# model's real-world performance on a dedicated, unseen test dataset.
+#
+# ------------------------------------------------------------------------------
+#
+# Methodology:
+#
+# The script simulates the process of making a forecast at a fixed time of day
+# (e.g., 3 PM) for every single day available in the test set. It then:
+#
+#   1. Loads the pre-trained LSTM model, scalers, and the exact `test_data.csv`
+#      that was separated during the training phase.
+#
+#   2. For each unique day in the test set, it uses the historical data up to the
+#      simulation time to generate a full-day calorie projection and a
+#      YES/NO verdict on meeting the daily goal.
+#
+#   3. It compares this forecast against the actual, ground-truth outcome for that
+#      day (which is known because we are using historical data).
+#
+#   4. Finally, it aggregates the results from all simulated days and calculates a
+#      comprehensive suite of evaluation metrics, including:
+#      - Regression Metrics (MAE, RMSE) to evaluate the accuracy of the
+#        projected calorie number.
+#      - Classification Metrics (Accuracy, Precision, Recall, F1-Score,
+#        and a Confusion Matrix) to evaluate the reliability of the
+#        YES/NO verdict.
+#
 # ==============================================================================
 
 import pandas as pd
