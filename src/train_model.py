@@ -1,14 +1,14 @@
 # ==============================================================================
-# Fitbit User Activity - Exploratory Data Analysis (EDA)
+# Fitbit User Activity - Model Training
 #
 # Project:      IIT Ropar Capstone Project
 #
 # Purpose: This script performs the entire machine learning pipeline:
-#   1. Loads the raw Fitbit data.
-#   2. Prepares it for the LSTM model (cleaning, creating sequences, scaling).
-#   3. Trains the LSTM model, using Early Stopping to find the best version.
-#   4. Evaluates the best model and shows performance graphs.
-#   5. Saves the final, trained model and all necessary components to a 'src' folder.
+#           1. Loads the raw Fitbit data.
+#           2. Prepares it for the LSTM model (cleaning, creating sequences, scaling).
+#           3. Trains the LSTM model, using Early Stopping to find the best version.
+#           4. Evaluates the best model and shows performance graphs.
+#           5. Saves the final, trained model and all necessary components to a 'src' folder.
 #
 # ==============================================================================
 

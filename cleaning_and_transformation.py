@@ -1,11 +1,15 @@
-import pandas as pd
-
 # ==============================================================================
-# DATA CONSISTENCY CHECK
+# Fitbit User Activity - Cleaning and Transforming Data
 #
-# The first step is to analyze user overlap between different datasets. This helps
-# justify which datasets to merge and which time periods to focus on.
+# Project:      IIT Ropar Capstone Project
+#
+# Purpose:      The first step is to analyze user overlap between different datasets. This helps
+#               justify which datasets to merge and which time periods to focus on.
+#
+# 
 # ==============================================================================
+
+import pandas as pd
 
 # A utility function to compare the user IDs present in two different dataframes.
 def checking_consistency(first_file, second_file, label):
