@@ -120,7 +120,7 @@ if __name__ == "__main__":
     print(f"     of the time-series model (LSTM), which relies on continuous data.")
 
     print("\n### Final Decision:")
-    print("To build a robust and high-quality baseline model, we will proceed using **ONLY the data from the second month**")
+    print("To build a robust and high-quality baseline model, we will proceed using ONLY the data from the second month")
     print("(April 12, 2016 to May 12, 2016). This approach maximizes data completeness and minimizes the issues")
     print("caused by inconsistent user tracking across the two periods.")
     print("\nIntegrating the first month's data is noted as a potential future enhancement for the project.")
